@@ -51,12 +51,9 @@ fn main() {
         }
         e = events.next();
     }
-
-    clear()
 }
 
 fn show_dialogue(speaker: &Option<String>, text: &String) {
-    clear();
     let output = if let Some(speaker) = speaker {
         format!("{speaker}: {text}")
     } else {
@@ -85,8 +82,4 @@ fn choose(choices: &[String]) -> usize {
     } else {
         0
     }
-}
-
-fn clear() {
-    print!("{}[2J", 27 as char);
 }
