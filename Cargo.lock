@@ -89,6 +89,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a357d28ed41a50f9c765dbfe56cbc04a64e53e5fc58ba79fbc34c10ef3df831f"
 
 [[package]]
+name = "evalexpr"
+version = "7.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1d4fd7bd9e32c1205549decf6f36772d7b606a579b26afaffa335ae148151a5d"
+
+[[package]]
 name = "fake-simd"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -137,6 +143,7 @@ checksum = "3e2e65a1a2e43cfcb47a895c4c8b10d1f4a61097f9f254f183aee60cad9c651d"
 name = "nobela_parser2"
 version = "0.1.0"
 dependencies = [
+ "evalexpr",
  "pest",
  "pest_derive",
 ]
@@ -146,6 +153,7 @@ name = "nobela_test"
 version = "0.1.0"
 dependencies = [
  "dialoguer",
+ "evalexpr",
  "nobela_parser2",
 ]
 

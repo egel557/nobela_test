@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 nobela_parser2 = { path = "../nobela_parser2" }
 dialoguer = "0.10.1"
+evalexpr = "7.2.0"

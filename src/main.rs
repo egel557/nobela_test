@@ -1,8 +1,15 @@
 use dialoguer::{console::Term, theme::ColorfulTheme, Select};
+use evalexpr::context_map;
 use nobela_parser2::{parse_flat, server};
 
 fn main() {
     let input = r#"
+if true:
+	"This should show."
+	if true:
+		"This too!"
+if false:
+	"This shouldn't show."
 "Hey, there! This is a demo for Nobela!"
 "This is just a regular dialogue. Cool, huh?"
 "This one has choices!"
@@ -24,11 +31,17 @@ fn main() {
 		"..."
 	-- "Still meh."
 		"..."
-"Well, that's about all we have for now..."
+"We also have a friend here with us!"
+"Say hi, Friend!"
+"Friend" "I'm not your friend."
 	"#;
 
     let stmts = parse_flat(input).unwrap_or_else(|e| panic!("{}", e));
-    let mut events = server::Server::new(&stmts, 0);
+    let context = context_map! {
+        "foo" => "bar"
+    }
+    .unwrap();
+    let mut events = server::Server::new(&stmts, 0, &context);
 
     let mut e = events.next();
 
