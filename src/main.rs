@@ -4,6 +4,9 @@ use nobela_parser2::{parse_flat, server};
 
 fn main() {
     let input = r#"
+"..."
+-- "This should show" if true
+-- "This shouldn't" if false
 if true:
 	"This should show."
 	if true:
@@ -53,8 +56,17 @@ if false:
                 choices,
             } => {
                 show_dialogue(speaker, text);
-                if !choices.is_empty() {
-                    let choice_index = choose(choices);
+
+                let mut cs = Vec::new();
+
+                for choice in choices {
+                    if !choice.1 {
+                        cs.push(choice.0.to_owned())
+                    }
+                }
+
+                if !cs.is_empty() {
+                    let choice_index = choose(&cs);
                     events.choose(choice_index)
                 } else {
                     nav();
