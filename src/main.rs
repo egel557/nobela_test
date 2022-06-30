@@ -1,4 +1,3 @@
-use device_query::{DeviceQuery, DeviceState, Keycode};
 use dialoguer::{console::Term, theme::ColorfulTheme, Select};
 use nobela_parser2::{parse_flat, server};
 
@@ -33,9 +32,6 @@ fn main() {
 
     let mut e = events.next();
 
-    let mut just_pressed = Vec::new();
-    let mut pressed = Vec::new();
-
     while let Some(ref event) = e {
         match event {
             server::Event::Dialogue {
@@ -48,53 +44,7 @@ fn main() {
                     let choice_index = choose(choices);
                     events.choose(choice_index)
                 } else {
-                    enum Nav {
-                        Next,
-                        Back,
-                    }
-                    let mut nav: Option<Nav> = None;
-
-                    println!("<- Back		Next ->");
-
-                    while nav.is_none() {
-                        let device_state = DeviceState::new();
-                        let keys: Vec<Keycode> = device_state.get_keys();
-
-                        just_pressed.clear();
-
-                        let mut remove_indexes = Vec::new();
-
-                        for (i, key) in pressed.iter().enumerate() {
-                            if !keys.contains(key) {
-                                remove_indexes.push(i)
-                            }
-                        }
-
-                        for i in remove_indexes {
-                            pressed.remove(i);
-                        }
-
-                        for key in keys {
-                            if !pressed.contains(&key) {
-                                just_pressed.push(key);
-                                pressed.push(key);
-                            }
-                        }
-
-                        nav = if (just_pressed.contains(&Keycode::Right)
-                            || just_pressed.contains(&Keycode::Enter))
-                            && !just_pressed.contains(&Keycode::Left)
-                        {
-                            Some(Nav::Next)
-                        } else if just_pressed.contains(&Keycode::Left)
-                            && !(just_pressed.contains(&Keycode::Right)
-                                || just_pressed.contains(&Keycode::Enter))
-                        {
-                            Some(Nav::Back)
-                        } else {
-                            None
-                        };
-                    }
+                    nav();
                 }
             }
             server::Event::Ignore => (),
@@ -113,6 +63,14 @@ fn show_dialogue(speaker: &Option<String>, text: &String) {
         format!(": {text}")
     };
     println!("{output}\n");
+}
+
+fn nav() {
+    Select::with_theme(&ColorfulTheme::default())
+        .items(&["Next"])
+        .default(0)
+        .interact_on_opt(&Term::stderr())
+        .unwrap();
 }
 
 fn choose(choices: &[String]) -> usize {
