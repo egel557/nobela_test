@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use dialoguer::{console::Term, theme::ColorfulTheme, Select};
 use evalexpr::context_map;
 use nobela_parser2::{parse_flat, server};
@@ -39,12 +41,17 @@ if false:
 "Friend" "I'm not your friend."
 	"#;
 
-    let stmts = parse_flat(input).unwrap_or_else(|e| panic!("{}", e));
+    let timeline = parse_flat(input).unwrap_or_else(|e| panic!("{}", e));
     let context = context_map! {
         "foo" => "bar"
     }
     .unwrap();
-    let mut events = server::Server::new(&stmts, 0, &context);
+    let mut events = server::Server::new(server::Config {
+        timelines: HashMap::new(),
+        timeline_stack: vec![&timeline],
+        index_stack: vec![0],
+        context: &context,
+    });
 
     let mut e = events.next();
 
