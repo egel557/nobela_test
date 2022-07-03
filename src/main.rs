@@ -5,7 +5,16 @@ use evalexpr::context_map;
 use nobela_parser2::{parse_flat, server};
 
 fn main() {
-    let input = r#"
+    let timeline1 = parse_flat(
+        r#"
+"This is the first timeline."
+jump "timeline_2"
+"Back to first timeline."
+"#,
+    )
+    .unwrap_or_else(|e| panic!("{}", e));
+    let timeline2 = parse_flat(
+        r#"
 "..."
 -- "This should show" if true
 -- "This shouldn't" if false
@@ -39,19 +48,25 @@ if false:
 "We also have a friend here with us!"
 "Say hi, Friend!"
 "Friend" "I'm not your friend."
-	"#;
-
-    let timeline = parse_flat(input).unwrap_or_else(|e| panic!("{}", e));
+		"#,
+    )
+    .unwrap_or_else(|e| panic!("{}", e));
     let context = context_map! {
         "foo" => "bar"
     }
     .unwrap();
-    let mut events = server::Server::new(server::Config {
+
+    let mut config = server::Config {
         timelines: HashMap::new(),
-        timeline_stack: vec![&timeline],
+        timeline_stack: vec![&timeline1],
         index_stack: vec![0],
         context: &context,
-    });
+    };
+
+    config.timelines.insert("timeline_1".to_owned(), &timeline1);
+    config.timelines.insert("timeline_2".to_owned(), &timeline2);
+
+    let mut events = server::Server::new(config);
 
     let mut e = events.next();
 
