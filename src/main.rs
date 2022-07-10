@@ -1,11 +1,12 @@
 use std::collections::HashMap;
 
 use dialoguer::{console::Term, theme::ColorfulTheme, Select};
-use evalexpr::context_map;
-use nobela_parser2::{parse_flat, server};
+use evalexpr::{context_map, ContextWithMutableVariables};
+use nobela_parser::{NobelaParser, server::{self}};
 
 fn main() {
-    let timeline1 = parse_flat(
+	let parser = NobelaParser::new(vec![]);
+    let timeline1 = parser.parse(
         r#"
 "This is the first timeline."
 jump "timeline_2"
@@ -13,8 +14,11 @@ jump "timeline_2"
 "#,
     )
     .unwrap_or_else(|e| panic!("{}", e));
-    let timeline2 = parse_flat(
+    let timeline2 = parser.parse(
         r#"
+foo = "Hello World"
+if foo == "Hello World":
+	"Assign successful!"
 "..."
 -- "This should show" if true
 -- "This shouldn't" if false
@@ -51,20 +55,20 @@ if false:
 		"#,
     )
     .unwrap_or_else(|e| panic!("{}", e));
-    let context = context_map! {
+    let mut context = context_map! {
         "foo" => "bar"
     }
     .unwrap();
+	
+	let mut config = server::Config {
+		timelines: HashMap::new(),
+		timeline_stack: vec![&timeline1],
+		index_stack: vec![0],
+		context: context.to_owned(),
+	};
 
-    let mut config = server::Config {
-        timelines: HashMap::new(),
-        timeline_stack: vec![&timeline1],
-        index_stack: vec![0],
-        context: &context,
-    };
-
-    config.timelines.insert("timeline_1".to_owned(), &timeline1);
-    config.timelines.insert("timeline_2".to_owned(), &timeline2);
+	config.timelines.insert("timeline_1".to_owned(), &timeline1);
+	config.timelines.insert("timeline_2".to_owned(), &timeline2);
 
     let mut events = server::Server::new(config);
 
@@ -76,6 +80,7 @@ if false:
                 speaker,
                 text,
                 choices,
+				..
             } => {
                 show_dialogue(speaker, text);
 
@@ -95,6 +100,10 @@ if false:
                 }
             }
             server::Event::Ignore => (),
+            server::Event::Set { variable_name, new_value } => {
+				context.set_value(variable_name.to_owned(), new_value.to_owned()).unwrap();
+				events.set_context(context.to_owned());
+			},
         }
         e = events.next();
     }

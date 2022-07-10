@@ -140,7 +140,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3e2e65a1a2e43cfcb47a895c4c8b10d1f4a61097f9f254f183aee60cad9c651d"
 
 [[package]]
-name = "nobela_parser2"
+name = "nobela_parser"
 version = "0.1.0"
 dependencies = [
  "evalexpr",
@@ -154,7 +154,7 @@ version = "0.1.0"
 dependencies = [
  "dialoguer",
  "evalexpr",
- "nobela_parser2",
+ "nobela_parser",
 ]
 
 [[package]]
