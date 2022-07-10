@@ -1,24 +1,28 @@
 use std::collections::HashMap;
 
 use dialoguer::{console::Term, theme::ColorfulTheme, Select};
-use evalexpr::{context_map, ContextWithMutableVariables};
-use nobela_parser::{NobelaParser, server::{self}};
+use evalexpr::{context_map, Context, ContextWithMutableVariables};
+use nobela_parser::{
+    server::{self},
+    NobelaParser,
+};
 
 fn main() {
-	let parser = NobelaParser::new(vec![]);
-    let timeline1 = parser.parse(
-        r#"
+    let parser = NobelaParser::new(vec![]);
+    let timeline1 = parser
+        .parse(
+            r#"
 "This is the first timeline."
 jump "timeline_2"
 "Back to first timeline."
 "#,
-    )
-    .unwrap_or_else(|e| panic!("{}", e));
-    let timeline2 = parser.parse(
-        r#"
-foo = "Hello World"
-if foo == "Hello World":
-	"Assign successful!"
+        )
+        .unwrap_or_else(|e| panic!("{}", e));
+    let timeline2 = parser
+        .parse(
+            r#"
+msg = "Hello World"
+"{msg}"
 "..."
 -- "This should show" if true
 -- "This shouldn't" if false
@@ -53,22 +57,23 @@ if false:
 "Say hi, Friend!"
 "Friend" "I'm not your friend."
 		"#,
-    )
-    .unwrap_or_else(|e| panic!("{}", e));
+        )
+        .unwrap_or_else(|e| panic!("{}", e));
     let mut context = context_map! {
-        "foo" => "bar"
+        "foo" => "bar",
+        "msg" => "This is a message"
     }
     .unwrap();
-	
-	let mut config = server::Config {
-		timelines: HashMap::new(),
-		timeline_stack: vec![&timeline1],
-		index_stack: vec![0],
-		context: context.to_owned(),
-	};
 
-	config.timelines.insert("timeline_1".to_owned(), &timeline1);
-	config.timelines.insert("timeline_2".to_owned(), &timeline2);
+    let mut config = server::Config {
+        timelines: HashMap::new(),
+        timeline_stack: vec![&timeline1],
+        index_stack: vec![0],
+        context: context.to_owned(),
+    };
+
+    config.timelines.insert("timeline_1".to_owned(), &timeline1);
+    config.timelines.insert("timeline_2".to_owned(), &timeline2);
 
     let mut events = server::Server::new(config);
 
@@ -80,7 +85,7 @@ if false:
                 speaker,
                 text,
                 choices,
-				..
+                ..
             } => {
                 show_dialogue(speaker, text);
 
@@ -100,10 +105,18 @@ if false:
                 }
             }
             server::Event::Ignore => (),
-            server::Event::Set { variable_name, new_value } => {
-				context.set_value(variable_name.to_owned(), new_value.to_owned()).unwrap();
-				events.set_context(context.to_owned());
-			},
+            server::Event::Set {
+                variable_name,
+                new_value,
+            } => {
+                context
+                    .get_value(variable_name)
+                    .unwrap_or_else(|| panic!("Unknown variable '{variable_name}'"));
+                context
+                    .set_value(variable_name.to_owned(), new_value.to_owned())
+                    .unwrap();
+                events.set_context(context.to_owned());
+            }
         }
         e = events.next();
     }
