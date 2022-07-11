@@ -2,13 +2,10 @@ use std::collections::HashMap;
 
 use dialoguer::{console::Term, theme::ColorfulTheme, Select};
 use evalexpr::{context_map, Context, ContextWithMutableVariables};
-use nobela_parser::{
-    server::{self},
-    NobelaParser,
-};
+use nobela::{parser, server};
 
 fn main() {
-    let parser = NobelaParser::new(vec![]);
+    let parser = parser::Parser::new(vec![]);
     let timeline1 = parser
         .parse(
             r#"

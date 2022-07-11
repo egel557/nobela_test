@@ -6,6 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-nobela_parser = { path = "../nobela_parser2" }
+nobela = { path = "../nobela" }
 dialoguer = "0.10.1"
 evalexpr = "7.2.0"
