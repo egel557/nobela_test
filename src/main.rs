@@ -1,78 +1,20 @@
-use std::collections::HashMap;
-
 use dialoguer::{console::Term, theme::ColorfulTheme, Select};
 use evalexpr::{context_map, Context, ContextWithMutableVariables};
 use nobela::{parser, server};
 
 fn main() {
-    let parser = parser::Parser::new(vec![]);
-    let timeline1 = parser
-        .parse(
-            r#"
-"This is the first timeline."
-jump "timeline_2"
-"Back to first timeline."
-"#,
-        )
-        .unwrap_or_else(|e| panic!("{}", e));
-    let timeline2 = parser
-        .parse(
-            r#"
-msg = "Hello World"
-"{msg}"
-"..."
--- "This should show" if true
--- "This shouldn't" if false
-if true:
-	"This should show."
-	if true:
-		"This too!"
-if false:
-	"This shouldn't show."
-"Hey, there! This is a demo for Nobela!"
-"This is just a regular dialogue. Cool, huh?"
-"This one has choices!"
--- "Cool!"
-	"Glad you thought so!"
-	"We actually took a different route when you made that choice!"
-	"So this dialogue is nested inside of that choice you made!"
-	"Within this nested dialogue, you can also have choices!"
-	-- "Whoa!"
-	-- "Also Whoa!"
--- "Meh..."
-	"..."
-	"Someone's hard to impress..."
-	"We took a different route when you made that choice..."
-	"This dialogue is now nested inside of that choice..."
-	"Does that impress you?"
-	-- "Yes!"
-	-- "Sure, I guess..."
-		"..."
-	-- "Still meh."
-		"..."
-"We also have a friend here with us!"
-"Say hi, Friend!"
-"Friend" "I'm not your friend."
-		"#,
-        )
-        .unwrap_or_else(|e| panic!("{}", e));
+	let characters = parser::characters_from_json("characters.json").unwrap();
+    let parser = parser::Parser::new(characters);
+	let timelines = parser.parse_dir("timelines").unwrap_or_else(|e| panic!("{}", e));
     let mut context = context_map! {
         "foo" => "bar",
         "msg" => "This is a message"
     }
     .unwrap();
 
-    let mut config = server::Config {
-        timelines: HashMap::new(),
-        timeline_stack: vec![&timeline1],
-        index_stack: vec![0],
-        context: context.to_owned(),
-    };
+    let mut events = server::Server::new(timelines, context.to_owned());
 
-    config.timelines.insert("timeline_1".to_owned(), &timeline1);
-    config.timelines.insert("timeline_2".to_owned(), &timeline2);
-
-    let mut events = server::Server::new(config);
+	events.start("start", 0);
 
     let mut e = events.next();
 
@@ -120,7 +62,7 @@ if false:
 }
 
 fn show_dialogue(speaker: &Option<String>, text: &String) {
-    let output = if let Some(speaker) = speaker {
+	let output = if let Some(speaker) = speaker {
         format!("{speaker}: {text}")
     } else {
         format!(": {text}")
