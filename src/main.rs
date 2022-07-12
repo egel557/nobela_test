@@ -4,9 +4,11 @@ use nobela::{parser, server};
 use viuer::{print_from_file, Config};
 
 fn main() {
-	let characters = parser::characters_from_json("characters.json").unwrap();
+    let characters = parser::characters_from_json("characters.json").unwrap();
     let parser = parser::Parser::new(characters);
-	let timelines = parser.parse_dir("timelines").unwrap_or_else(|e| panic!("{}", e));
+    let timelines = parser
+        .parse_dir("timelines")
+        .unwrap_or_else(|e| panic!("{}", e));
     let mut context = context_map! {
         "foo" => "bar",
         "msg" => "This is a message"
@@ -15,7 +17,7 @@ fn main() {
 
     let mut events = server::Server::new(timelines, context.to_owned());
 
-	events.start("start", 0);
+    events.start("start", 0);
 
     let mut e = events.next();
 
@@ -25,7 +27,7 @@ fn main() {
                 speaker,
                 text,
                 choices,
-				portrait_path,
+                portrait_path,
                 ..
             } => {
                 show_dialogue(speaker, text, portrait_path);
@@ -64,18 +66,18 @@ fn main() {
 }
 
 fn show_dialogue(speaker: &Option<String>, text: &String, portrait_path: &Option<String>) {
-	println!("{:#?}", portrait_path);
-	match portrait_path {
-		Some(portrait_path) => {
-			let conf = Config {
-				y: 100,
-				..Default::default()
-			};
-		
-			print_from_file(&portrait_path, &conf).expect("Image printing failed.");
-		},
-		None => (),
-	}
+    println!("{:#?}", portrait_path);
+    match portrait_path {
+        Some(portrait_path) => {
+            let conf = Config {
+                y: 100,
+                ..Default::default()
+            };
+
+            print_from_file(&portrait_path, &conf).expect("Image printing failed.");
+        }
+        None => (),
+    }
 
     let output = if let Some(speaker) = speaker {
         format!("{speaker}: {text}")
