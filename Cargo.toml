@@ -9,3 +9,4 @@ edition = "2021"
 nobela = { path = "../nobela" }
 dialoguer = "0.10.1"
 evalexpr = "7.2.0"
+viuer = "0.6.1"

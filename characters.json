@@ -4,6 +4,11 @@
 		"display_name": "Elira",
 		"aliases": {
 			"Sheesh": "Sheesh Dragon"
+		},
+		"portraits": {
+			"default": "images/elira3.png",
+			"blush": "images/elira2.png",
+			"smile": "images/elira1.png"
 		}
 	}
 ]

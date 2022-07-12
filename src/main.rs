@@ -1,6 +1,7 @@
 use dialoguer::{console::Term, theme::ColorfulTheme, Select};
 use evalexpr::{context_map, Context, ContextWithMutableVariables};
 use nobela::{parser, server};
+use viuer::{print_from_file, Config};
 
 fn main() {
 	let characters = parser::characters_from_json("characters.json").unwrap();
@@ -24,9 +25,10 @@ fn main() {
                 speaker,
                 text,
                 choices,
+				portrait_path,
                 ..
             } => {
-                show_dialogue(speaker, text);
+                show_dialogue(speaker, text, portrait_path);
 
                 let mut cs = Vec::new();
 
@@ -61,8 +63,21 @@ fn main() {
     }
 }
 
-fn show_dialogue(speaker: &Option<String>, text: &String) {
-	let output = if let Some(speaker) = speaker {
+fn show_dialogue(speaker: &Option<String>, text: &String, portrait_path: &Option<String>) {
+	println!("{:#?}", portrait_path);
+	match portrait_path {
+		Some(portrait_path) => {
+			let conf = Config {
+				y: 100,
+				..Default::default()
+			};
+		
+			print_from_file(&portrait_path, &conf).expect("Image printing failed.");
+		},
+		None => (),
+	}
+
+    let output = if let Some(speaker) = speaker {
         format!("{speaker}: {text}")
     } else {
         format!(": {text}")
